@@ -1,0 +1,47 @@
+# generated files
+bin/
+gen/
+target/
+build/
+tmp/
+.gradle/
+*.class
+*.apk
+*.ap_
+/app/screenshot_*.png
+/screenshot_*.png
+/devices
+/calabash/screenshot_*.png
+/calabash/cucumber.html
+/.calabash_settings
+/tools/.calabash_settings
+
+# IntellJ config files
+# We want to share run configurations, so don't exclude the whole dir
+/.idea
+/.navigation
+*.iml
+
+# Local configuration files
+local.properties
+TAGS
+.DS_Store
+.codemod.bookmark
+
+# Extra protection for removed files
+zedge-key.keystore
+
+.irb-history
+.ruby-version
+
+/.calabash_settings
+
+# Android Studio Layout Inspector files
+captures/
+
+# IDL cache directory when running in Jenkins
+/.idl
+
+# Fabric properties is generated per developer if the Fabric sdk is installed.
+# This key should not be published on github.
+app/fabric.properties

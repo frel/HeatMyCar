@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">HeatMyCar</string>
+    <string name="accessibility_description">Test 1 In order to control the PHEV Remote application, HeatMyCar needs to be set as an accessibility service.</string>
+</resources>
