@@ -5,15 +5,146 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/delayContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Change"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/ignoreContainer"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/delayLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:fontFamily="sans-serif-medium"
+            android:text="Action delay:"/>
+
+        <EditText
+            android:id="@+id/delay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:gravity="center"
+            android:fontFamily="sans-serif-medium"
+            tools:text="15"/>
+
+        <TextView
+            android:id="@+id/secondsLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:fontFamily="sans-serif-medium"
+            android:text="seconds"/>
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/ignoreContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/delayContainer"
+        app:layout_constraintBottom_toBottomOf="@+id/stateContainer"
+
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/ignoreLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:text="Service Enabled:"/>
+
+        <ToggleButton
+            android:id="@+id/toggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:gravity="center"/>
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/stateContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ignoreContainer"
+        app:layout_constraintBottom_toBottomOf="@+id/accessibilityServiceLabel"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+
+        <TextView
+            android:id="@+id/stateLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current state:"
+            android:textSize="20sp"
+            android:gravity="end"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            />
+
+        <TextView
+            android:id="@+id/state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:gravity="start"
+            android:text="Initialized"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"/>
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/accessibilityServiceLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        tools:text="Accessibility service is enabled"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:fontFamily="sans-serif-medium"
+        app:layout_constraintTop_toBottomOf="@+id/stateContainer"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
 
 </android.support.constraint.ConstraintLayout>

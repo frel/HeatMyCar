@@ -4,7 +4,12 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -14,6 +19,35 @@
         android:supportsRtl="true"
         android:canRetrieveWindowContent="true"
         android:theme="@style/AppTheme">
+
+        <receiver
+            android:name="DeviceAdminReceiver"
+            android:description="@string/admin_description"
+            android:label="@string/admin_label"
+            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_policies"/>
+
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+            </intent-filter>
+
+        </receiver>
+
+        <receiver android:name="com.subgarden.heatmycar.MockSmsReceiver"
+                  android:enabled="true">
+            <intent-filter android:priority="1000">
+                <action android:name="com.subgarden.mock.sms.heat"/>
+                <action android:name="com.subgarden.mock.sms.battery"/>
+                <action android:name="com.subgarden.mock.sms.abort"/>
+                <action android:name="com.subgarden.mock.sms.status"/>
+                <action android:name="com.subgarden.mock.sms.reset"/>
+                <action android:name="com.subgarden.mock.sms.batterywarnings"/>
+                <action android:name="com.subgarden.mock.sms.help"/>
+            </intent-filter>
+        </receiver>
 
         <receiver android:name=".SmsReceiver">
             <intent-filter android:priority="1000">
@@ -28,7 +62,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MyAccessibilityService"
+        <service android:name=".AccessibilityService"
                  android:enabled="true"
                  android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
@@ -38,6 +72,11 @@
                        android:resource="@xml/serviceconfig" />
 
         </service>
+
+        <service android:name=".ForegroundService"
+                 android:enabled="true"
+                 android:exported="true"/>
+
     </application>
 
 </manifest>
