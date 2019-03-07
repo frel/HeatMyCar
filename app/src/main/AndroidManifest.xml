@@ -20,6 +20,14 @@
         android:canRetrieveWindowContent="true"
         android:theme="@style/AppTheme">
 
+
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name="DeviceAdminReceiver"
             android:description="@string/admin_description"
@@ -49,18 +57,18 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".SmsReceiver">
+        <receiver android:name=".SmsReceiver"
+                  android:permission="android.permission.BROADCAST_SMS">
             <intent-filter android:priority="1000">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".MainActivity">
+        <receiver android:name=".HeatTimerReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="com.subgarden.alarms.heat" />
             </intent-filter>
-        </activity>
+        </receiver>
 
         <service android:name=".AccessibilityService"
                  android:enabled="true"
@@ -74,8 +82,7 @@
         </service>
 
         <service android:name=".ForegroundService"
-                 android:enabled="true"
-                 android:exported="true"/>
+                 android:enabled="true"/>
 
     </application>
 

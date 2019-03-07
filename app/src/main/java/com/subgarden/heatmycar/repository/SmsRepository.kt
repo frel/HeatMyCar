@@ -44,8 +44,10 @@ object SmsRepository {
             .subscribeOn(Schedulers.computation())
             .observeOn(Schedulers.computation())
             .doOnNext { lastPhoneNumber = it.address }
-            .map { sms ->
-                sms.copy(message = sms.message.toLowerCase(Locale.ENGLISH)) to StateRepository.state.blockingFirst()
+            .switchMapMaybe { sms ->
+                StateRepository.state.map {
+                    sms.copy(message = sms.message.toLowerCase(Locale.ENGLISH)) to it
+                }.firstElement()
             }
 
     lateinit var context: Context
@@ -58,38 +60,35 @@ object SmsRepository {
     private fun String.isToggleBatteryWarningMessage() =  this == "batterywarnings" || this == "batteriadvarsler"
     private fun String.isHelpMessage() =  this == "help" || this == "hjelp"
 
-    val mainThreadHandler = Handler(Looper.getMainLooper())
+    private val mainThreadHandler = Handler(Looper.getMainLooper())
+
+    fun checkBatteryStatus(context: Context) {
+        Log.d("####", "Battery charge timer triggered.")
+        // Only send sms between 9:00 and 22:00 hours
+        val hourOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val acceptableHourOfDay = hourOfDay in 10..22
+        Log.d("####", "Hour of day is: $hourOfDay. It is an acceptable hour of day: $acceptableHourOfDay")
+
+        val battery = getBatteryStatus(context)
+        if (battery in 80..100) {
+            // Resetting warnings since the battery charge is good.
+            Log.d("####", "Charge above 80%. Resetting battery warnings counter.")
+            batteryWarnings = 0
+        } else if (batteryWarningsEnabled &&
+                   acceptableHourOfDay &&
+                   batteryWarnings < 1 &&
+                   lastPhoneNumber.isNotEmpty()) {
+            if (battery in 1..10) {
+                mainThreadHandler.post {
+                    sendSMS(lastPhoneNumber, "Jeg må lades :) Batterinivå er $battery%")
+                    batteryWarnings++
+                }
+            }
+        }
+    }
 
     init {
         Log.d("####", "SmsHandler")
-
-        val threeHoursMs = 3 * 60 * 60 * 1000L
-        Timer().scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                mainThreadHandler.post {
-                    Log.d("####", "Battery charge timer triggered.")
-                    // Only send sms between 9:00 and 22:00 hours
-                    val hourOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-                    val acceptableHourOfDay = hourOfDay in 10..22
-                    Log.d("####", "Hour of day is: $hourOfDay. It is an acceptable hour of day: $acceptableHourOfDay")
-
-                    val battery = getBatteryStatus()
-                    if (battery in 80..100) {
-                        // Resetting warnings since the battery charge is good.
-                        Log.d("####", "Charge above 80%. Resetting battery warnings counter.")
-                        batteryWarnings = 0
-                    } else if (batteryWarningsEnabled &&
-                               acceptableHourOfDay &&
-                               batteryWarnings < 1 &&
-                               lastPhoneNumber.isNotEmpty()) {
-                        if (battery in 1..10) {
-                            sendSMS(lastPhoneNumber, "Jeg må lades :) Batterinivå er $battery%")
-                            batteryWarnings++
-                        }
-                    }
-                }
-            }
-        }, 0, threeHoursMs)
 
         messages.filter { it.first.message.isHeatMessage() && it.second is StateRepository.State.Heating }
                 .subscribeOn(Schedulers.io())
@@ -108,13 +107,15 @@ object SmsRepository {
                     throw IllegalStateException("#### ${it.message}")
                 }
                 .observeOn(Schedulers.io())
-                .map {
-                    WifiUtil.connectToWifi(context.applicationContext).blockingFirst()
-                    it
+                .switchMap { pair ->
+                    WifiUtil.connectToWifi(context.applicationContext)
+                            .filter { it }
+                            .map {
+                                pair
+                            }
                 }
-                .map {
+                .doOnNext {
                     unlockScreen(context)
-                    it
                 }
                 .delay(2, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
@@ -279,6 +280,20 @@ object SmsRepository {
         _messages.offer(sms)
     }
 
+    private fun getBatteryStatus(context: Context) : Int {
+        // Sticky event. No receiver needed.
+        val batteryStatus = context.registerReceiver(
+                null,
+                IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+
+        val level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+        val scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+
+        val batteryPct = level / scale.toFloat()
+
+        return (batteryPct * 100).toInt()
+    }
+
     private fun getBatteryStatus() : Int {
         // Sticky event. No receiver needed.
         val batteryStatus = context.registerReceiver(
@@ -298,9 +313,8 @@ object SmsRepository {
         Log.d("####", debugMessage)
         if (BuildConfig.DEBUG) Toast.makeText(context, debugMessage, Toast.LENGTH_LONG).show()
 
-        val sms = SmsManager.getDefault()
-        sms.sendTextMessage(phoneNumber, null, message, null, null)
-
+        val smsManager = SmsManager.getDefault()
+        smsManager.sendTextMessage(phoneNumber, null, message, null, null)
     }
 
     private fun getAllContacts(): List<Contact> {

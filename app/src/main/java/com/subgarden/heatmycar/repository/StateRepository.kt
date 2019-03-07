@@ -7,7 +7,6 @@ import android.util.Log
 import io.reactivex.Flowable
 import io.reactivex.processors.BehaviorProcessor
 import io.reactivex.schedulers.Schedulers
-import java.util.*
 
 /**
  * @author Fredrik Larsen (f@subgarden.com)
@@ -39,44 +38,6 @@ object StateRepository {
 
     val accessibilityServiceEnabled: Flowable<Boolean> = accessibilityServiceEnabledRelay
 
-    var heatingTimer: Timer? = null
-
-    private fun setupNewHeatTimer() {
-        val delayMinutes = 31L
-        Log.d("####", "Starting new timer for $delayMinutes minutes.")
-
-        heatingTimer?.cancel()
-        heatingTimer = Timer()
-        heatingTimer?.schedule(object : TimerTask() {
-            override fun run() {
-                Log.d("####", "Heat timer finished. Updating state to Idle.")
-                updateState(StateRepository.State.Idle)
-            }
-        }, delayMinutes * 60 * 1000)
-    }
-
-    init {
-        Log.d("####", "StateRepository init")
-
-        state.filter { it is StateRepository.State.Heating }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(Schedulers.computation())
-                .map { it as State.Heating }
-                .subscribe {
-                    Log.d("####", "Cancelling heat timer.")
-                   setupNewHeatTimer()
-                }
-
-
-        state.filter { it == StateRepository.State.Abort }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(Schedulers.computation())
-                .subscribe {
-                    Log.d("####", "Abort received. Cancelling heat timer.")
-                    heatingTimer?.cancel()
-                }
-
-    }
     fun updateState(state: StateRepository.State) {
         Log.d("####", "Offering state ${state.name}")
         stateRelay.offer(state)

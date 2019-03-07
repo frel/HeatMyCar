@@ -222,17 +222,20 @@ class AccessibilityService : AccessibilityService() {
                 .filter { it == Abort }
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map {
+                .switchMap { state ->
                     Log.d("####", "this.applicationContext = ${this.applicationContext}")
-                    WifiUtil.connectToWifi(this.applicationContext).blockingFirst()
-                    it
+                    WifiUtil.connectToWifi(this.applicationContext)
+                            .filter { it }
+                            .map {
+                                state
+                            }
                 }
-                .map {
+                .doOnNext {
                     StateRepository.unlockScreen(this)
                     launchOutlanderApp()
                 }
                 .delay(getActionDelay(), TimeUnit.SECONDS)
-                .map {
+                .doOnNext {
                     Log.d(TAG, "Aborting on command from user. Waiting ${getActionDelay()} second to update state...")
                     climateOnOffButtonNode?.performClick()
                 }
