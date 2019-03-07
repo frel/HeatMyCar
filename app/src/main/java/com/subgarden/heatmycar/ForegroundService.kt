@@ -7,6 +7,11 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.TaskStackBuilder
 import android.util.Log
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
+import com.subgarden.heatmycar.repository.StateRepository
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -15,7 +20,7 @@ import android.util.Log
 class ForegroundService : Service() {
 
     companion object {
-        private const val TAG_FOREGROUND_SERVICE = "FOREGROUND_SERVICE"
+        private const val TAG = "####"
         private const val NOTIFICATION_CHANNEL_ID = "1"
         private const val NOTIFICATION_CHANNEL_NAME = "Service running notification"
     }
@@ -25,15 +30,40 @@ class ForegroundService : Service() {
         throw UnsupportedOperationException("Not yet implemented")
     }
 
+    private val heatTimerMs = 31 * 60 * 1000L /* 31 minutes */
+
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG_FOREGROUND_SERVICE, "My foreground service onCreate().")
+        Log.d(TAG, "Foreground service onCreate().")
         startForegroundService()
+
+        StateRepository.state.filter { it is StateRepository.State.Heating }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(Schedulers.computation())
+                .map { it as StateRepository.State.Heating }
+                .subscribe {
+                    HeatTimerReceiver.startHeatTimer(this, heatTimerMs)
+                }
+
+        StateRepository.state.filter { it == StateRepository.State.Abort }
+                .subscribeOn(Schedulers.computation())
+                .observeOn(Schedulers.computation())
+                .subscribe {
+                    Log.d("####", "Abort received. Cancelling heat timer.")
+                    HeatTimerReceiver.cancelHeatTimer(this)
+                }
+
+        val batteryCheckWork = PeriodicWorkRequest.Builder(BatteryStatusWorker::class.java, 5, TimeUnit.HOURS).build()
+        WorkManager.getInstance().enqueue(batteryCheckWork)
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "Foreground service onDestroy().")
     }
 
     /* Used to build and start foreground service. */
     private fun startForegroundService() {
-        Log.d(TAG_FOREGROUND_SERVICE, "Start foreground service.")
+        Log.d(TAG, "Start foreground service.")
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -66,7 +96,7 @@ class ForegroundService : Service() {
     }
 
     private fun stopForegroundService() {
-        Log.d(TAG_FOREGROUND_SERVICE, "Stop foreground service.")
+        Log.d(TAG, "Stop foreground service.")
 
         // Stop foreground service and remove the notification.
         stopForeground(true)

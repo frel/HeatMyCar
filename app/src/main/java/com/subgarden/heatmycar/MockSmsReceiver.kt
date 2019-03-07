@@ -21,7 +21,7 @@ class MockSmsReceiver : BroadcastReceiver() {
         const val ACTION_BATTERY_WARNINGS = "com.subgarden.mock.sms.batterywarnings"
         const val ACTION_HELP = "com.subgarden.mock.sms.help"
 
-        const val testPhoneNumber = "12341234"
+        const val testPhoneNumber = "12345678"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
