@@ -28,7 +28,7 @@ class WifiUtil {
         }
 
         fun connectToWifi(context: Context): Flowable<Boolean> {
-            if (true || isConnectedViaWifi(context)) { // TODO revert
+            if (isConnectedViaWifi(context)) { // TODO revert
                 Log.d("####", "Already connected to Wifi. Continuing...")
                 return Flowable.fromCallable { true }
             }
